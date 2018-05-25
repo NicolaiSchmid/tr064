@@ -172,3 +172,11 @@ service.actions.SetEnable([{name: 'NewEnable', value: '1'}], function (err, resu
     console.log(result);
 });
 ```
+
+### Contributing
+Feel free to provide PRs with updates to this package. But please follow these steps:
+* Fork it
+* Add your changes
+* Format your code: `yarn format`
+* Commit your changes, while adhearing to the Angular commit convention.
+* Submit your PR
