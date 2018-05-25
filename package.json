@@ -1,6 +1,6 @@
 {
   "name": "tr064",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "author": "Nicolai Schmid <hey@schmid.uno>",
   "description": "TR-064 - UPnP/IGD for node.js",
   "scripts": {
