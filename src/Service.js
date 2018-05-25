@@ -19,11 +19,11 @@ function Service(device, serviceInfo, callback) {
     _parseSCPD(this);
 
 }
-Service.prototype.listActions = function() {};
-Service.prototype.listStateVariables = function() {};
+Service.prototype.listActions = function () { };
+Service.prototype.listStateVariables = function () { };
 
 
-var _pushArg = function(argument, inArgs, outArgs) {
+var _pushArg = function (argument, inArgs, outArgs) {
     if (argument.direction == "in") {
         inArgs.push(argument.name);
     } else if (argument.direction == "out") {
@@ -32,7 +32,7 @@ var _pushArg = function(argument, inArgs, outArgs) {
 };
 
 
-var _parseActions = function(actionData) {
+var _parseActions = function (actionData) {
     if (!Array.isArray(actionData)) {
         return;
     }
@@ -42,18 +42,18 @@ var _parseActions = function(actionData) {
     //
 };
 
-var _parseSCPD = function(obj) {
+var _parseSCPD = function (obj) {
     if (obj.device.meta.urlPart && obj.device.meta.urlPart.length > 0) {
         obj.meta.SCPDURL = obj.device.meta.urlPart + "/" + obj.meta.SCPDURL;
     }
     var url = "http://" + obj.host + ":" + obj.port + obj.meta.SCPDURL;
     //console.log(url);
-    request(url, function(error, response, body) {
+    request(url, function (error, response, body) {
         if (!error && response.statusCode == 200) {
             // console.log(body);
             parseString(body, {
                 explicitArray: false
-            }, function(err, result) {
+            }, function (err, result) {
                 var pA = bind(obj, _parseActions);
                 var pV = bind(obj, _parseStateVariables);
                 pA(result.scpd.actionList.action);
@@ -67,18 +67,18 @@ var _parseSCPD = function(obj) {
     });
 };
 
-var _insertAction = function(el) {
+var _insertAction = function (el) {
     var outArgs = [];
     var inArgs = [];
     if (el.argumentList && Array.isArray(el.argumentList.argument)) {
-        el.argumentList.argument.forEach(function(argument) {
+        el.argumentList.argument.forEach(function (argument) {
             _pushArg(argument, inArgs, outArgs);
         });
     } else if (el.argumentList) {
         _pushArg(el.argumentList.argument, inArgs, outArgs);
     }
 
-    this.actions[el.name] = bind(this, function(vars, callback) {
+    this.actions[el.name] = bind(this, function (vars, callback) {
         this._callAction(el.name, inArgs, outArgs, vars, callback);
     });
     this.meta.actionsInfo.push({
@@ -88,7 +88,7 @@ var _insertAction = function(el) {
     });
 };
 
-Service.prototype._callAction = function(name, inArguments, outArguments, vars, callback) {
+Service.prototype._callAction = function (name, inArguments, outArguments, vars, callback) {
 
     if (typeof vars === 'function') {
         callback = vars;
@@ -98,25 +98,25 @@ Service.prototype._callAction = function(name, inArguments, outArguments, vars, 
     bind(this, this._sendSOAPActionRequest(this.device, this.meta.controlURL, this.meta.serviceType, name, inArguments, outArguments, vars, callback));
 };
 
-Service.prototype._subscribeStateVariableChangeEvent = function(sv, callback) {
+Service.prototype._subscribeStateVariableChangeEvent = function (sv, callback) {
     inspect(arguments);
 };
 
 function bind(scope, fn) {
-    return function() {
+    return function () {
         return fn.apply(scope, arguments);
     };
 }
 
-var _insertStateVariables = function(sv) {
+var _insertStateVariables = function (sv) {
     if (sv.$.sendEvents == "yes") {
-        this.stateVariables[sv.name] = bind(this, function(callback) {
+        this.stateVariables[sv.name] = bind(this, function (callback) {
             this._subscribeStateVariableChangeEvent(sv, callback)
         });
     }
 };
 
-var _parseStateVariables = function(stateVariableData) {
+var _parseStateVariables = function (stateVariableData) {
     var insSV = bind(this, _insertStateVariables);
     if (Array.isArray(stateVariableData)) {
         stateVariableData.forEach(insSV);
@@ -126,8 +126,8 @@ var _parseStateVariables = function(stateVariableData) {
 };
 
 
-Service.prototype._sendSOAPActionRequest = function(device, url, serviceType, action, inArguments, outArguments, vars, callback) {
-	const self = this;
+Service.prototype._sendSOAPActionRequest = function (device, url, serviceType, action, inArguments, outArguments, vars, callback) {
+    const self = this;
     var head = "";
     if (device._auth.uid) { // Content Level Authentication 
         if (device._auth.auth) {
@@ -195,15 +195,15 @@ Service.prototype._sendSOAPActionRequest = function(device, url, serviceType, ac
         agentOptions: agentOptions,
         headers: {
             "SoapAction": serviceType + "#" + action,
-            "Content-Type": "text/xml; charset=\"utf-8\""       
+            "Content-Type": "text/xml; charset=\"utf-8\""
         },
         body: body,
         timeout: 5000
-    }, function(error, response, body) {
+    }, function (error, response, body) {
         if (!error && response.statusCode == 200) {
             parseString(body, {
                 explicitArray: false
-            }, function(err, result) {
+            }, function (err, result) {
                 var challange = false;
                 var res = {};
                 var env = result['s:Envelope'];
@@ -212,28 +212,28 @@ Service.prototype._sendSOAPActionRequest = function(device, url, serviceType, ac
                     if (header['h:Challenge']) {
                         var ch = header['h:Challenge'];
                         challange = true;
-	                    if(self.logAttempts.length){
-		                    for(const i in self.logAttempts){
-			                    if(self.logAttempts[i].service = serviceType){
-				                    if(self.logAttempts[i].attempts >= 1){
-					                    error = new Error("Credentials incorrect");
-				                    } else {
-					                    self.logAttempts[i].attempts += 1;
-				                        device._auth.des = serviceType;
-			                            device._auth.sn = ch.Nonce;
-			                            device._auth.realm = ch.Realm;
-			                            device._auth.auth = device._calcAuthDigest(device._auth.uid,
-			                                device._auth.pwd,
-			                                device._auth.realm,
-			                                device._auth.sn);
-			                            device._auth.chCount++;
-			                            that._sendSOAPActionRequest(device, url, serviceType, action, inArguments, outArguments, vars, callback);
-			                            return;
-				                    }
-				                }
-		                    }
-	                    } else {
-		                    self.logAttempts.push({service: serviceType, attempts: 1})
+                        if (self.logAttempts.length) {
+                            for (const i in self.logAttempts) {
+                                if (self.logAttempts[i].service = serviceType) {
+                                    if (self.logAttempts[i].attempts >= 1) {
+                                        error = new Error("Credentials incorrect");
+                                    } else {
+                                        self.logAttempts[i].attempts += 1;
+                                        device._auth.des = serviceType;
+                                        device._auth.sn = ch.Nonce;
+                                        device._auth.realm = ch.Realm;
+                                        device._auth.auth = device._calcAuthDigest(device._auth.uid,
+                                            device._auth.pwd,
+                                            device._auth.realm,
+                                            device._auth.sn);
+                                        device._auth.chCount++;
+                                        that._sendSOAPActionRequest(device, url, serviceType, action, inArguments, outArguments, vars, callback);
+                                        return;
+                                    }
+                                }
+                            }
+                        } else {
+                            self.logAttempts.push({ service: serviceType, attempts: 1 })
                             device._auth.sn = ch.Nonce;
                             device._auth.realm = ch.Realm;
                             device._auth.auth = device._calcAuthDigest(device._auth.uid,
@@ -244,14 +244,14 @@ Service.prototype._sendSOAPActionRequest = function(device, url, serviceType, ac
                             // Repeat request.
                             that._sendSOAPActionRequest(device, url, serviceType, action, inArguments, outArguments, vars, callback);
                             return;
-	                    }
-	                    
+                        }
+
                     } else if (header['h:NextChallenge']) {
-                        var nx = header['h:NextChallenge'];                        
-                        for(const i in self.logAttempts){
-	                        if(self.logAttempts[i].service = serviceType){
-		                        self.logAttempts[i].attempts = 0;
-	                        }
+                        var nx = header['h:NextChallenge'];
+                        for (const i in self.logAttempts) {
+                            if (self.logAttempts[i].service = serviceType) {
+                                self.logAttempts[i].attempts = 0;
+                            }
                         }
                         //device._auth.auth = nx.Nonce;
                         device._auth.chCount = 0;
@@ -261,7 +261,7 @@ Service.prototype._sendSOAPActionRequest = function(device, url, serviceType, ac
                             device._auth.uid,
                             device._auth.pwd,
                             device._auth.realm,
-                            device._auth.sn);                       
+                            device._auth.sn);
                     }
                 }
 
@@ -270,7 +270,7 @@ Service.prototype._sendSOAPActionRequest = function(device, url, serviceType, ac
                     if (body['u:' + action + 'Response']) {
                         var responseVars = body['u:' + action + 'Response'];
                         if (outArguments) {
-                            outArguments.forEach(function(arg) {
+                            outArguments.forEach(function (arg) {
                                 res[arg] = responseVars[arg];
                             });
                         }
@@ -291,7 +291,7 @@ Service.prototype._sendSOAPActionRequest = function(device, url, serviceType, ac
 };
 
 
-Service.prototype.sendSOAPEventSubscribeRequest = function(callback) {
+Service.prototype.sendSOAPEventSubscribeRequest = function (callback) {
     console.log("Send EventSubscribe...");
     request({
         method: 'SUBSCRIBE',
@@ -301,7 +301,7 @@ Service.prototype.sendSOAPEventSubscribeRequest = function(callback) {
             "NT": "upnp:event",
             "TIMEOUT": "Second-infinite"
         }
-    }, function(error, response, body) {
+    }, function (error, response, body) {
         console.log("END");
         if (response.statusCode == 200) {
             console.log("EventSubscribeRequest OK");
