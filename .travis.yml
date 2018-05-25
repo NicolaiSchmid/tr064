@@ -1,0 +1,18 @@
+language: node_js
+node_js:
+  - node
+
+cache: 
+  yarn: true
+
+script:
+  - npm run build
+
+deploy:
+  provider: npm
+  email: $NPM_EMAIL
+  skip_cleanup: true
+  api_key: $NPM_TOKEN
+  on:
+    branch: master
+    tags: true

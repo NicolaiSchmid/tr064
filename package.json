@@ -1,32 +1,40 @@
 {
-    "name": "tr-064",
+    "name": "tr064",
     "version": "0.3.0",
-    "author": "Hendrik Westerberg <hendrik@gestorf.com>",
+    "author": "Nicolai Schmid <hey@schmid.uno>",
     "description": "TR-064 - UPnP/IGD for node.js",
     "scripts": {
-        "test": "node ./testing.js"
+        "bump": "standard-version",
+        "build": "rollup -c",
+        "test": "node test/"
     },
-    "main": "./lib/TR064",
+    "main": "build/index.cjs.js",
+    "module": "build/index.esm.js",
     "repository": {
         "type": "git",
-        "url": "https://github.com/hendrikw01/tr-064.git"
+        "url": "https://github.com/NicolaiSchmid/tr064.git"
     },
     "keywords": [
-    "TR-064",
-    "UPnP",
-    "IGD",
-    "Fritz.Box",
-    "Router"
-  ],
+        "TR-064",
+        "UPnP",
+        "IGD",
+        "Fritz.Box",
+        "Router"
+    ],
     "dependencies": {
-        "xml2js": ">=0.4.0",
-        "request": ">=2.30",
+        "async": ">=0.2.0",
         "eyes": ">=0.1.0",
-        "async": ">=0.2.0"
+        "request": ">=2.30",
+        "xml2js": ">=0.4.0"
     },
     "analyze": false,
-    "license": "Apache License",
+    "license": "Apache-2.0",
     "engines": {
-        "node": ">=0.10"
+        "node": ">=6.0"
+    },
+    "devDependencies": {
+        "rollup": "^0.59.3",
+        "rollup-plugin-commonjs": "^9.1.3",
+        "standard-version": "^4.4.0"
     }
 }
