@@ -6,7 +6,11 @@
   "scripts": {
     "bump": "standard-version",
     "build": "rollup -c",
-    "test": "node test/"
+    "test": "node test/",
+    "lint": "wasc-tools lint",
+    "format": "wasc-tools format",
+    "count": "wasc-tools count",
+    "todo": "wasc-tools todo"
   },
   "main": "build/index.cjs.js",
   "module": "build/index.esm.js",
@@ -36,6 +40,7 @@
     "node": ">=6.0"
   },
   "devDependencies": {
+    "@wasc/tools": "^1.8.5",
     "rollup": "^0.59.3",
     "rollup-plugin-commonjs": "^9.1.3",
     "standard-version": "^4.4.0"
