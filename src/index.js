@@ -48,7 +48,6 @@ TR064.prototype._parseDesc = function(host, port, url, callback) {
                     devInfo.port = port;
                     var path = URL.parse(nurl).pathname;
                     devInfo.urlPart = path.substring(0, path.lastIndexOf('/'));
-                    console.log(devInfo.urlPart);
                     var d = require('./Device');
                     new d.Device(devInfo, callback);
                 } else {
