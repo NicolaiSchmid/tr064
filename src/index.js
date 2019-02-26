@@ -1,7 +1,12 @@
+import Device from './Device';
+
 var parseString = require('xml2js').parseString;
 var request = require('request');
 var http = require('http');
-var inspect = require('eyes').inspector({ maxLength: false, hideFunctions: false });
+var inspect = require('eyes').inspector({
+  maxLength: false,
+  hideFunctions: false
+});
 var URL = require('url');
 
 var TR064_DESC_URL = '/tr64desc.xml';
@@ -48,8 +53,7 @@ TR064.prototype._parseDesc = function(host, port, url, callback) {
           devInfo.port = port;
           var path = URL.parse(nurl).pathname;
           devInfo.urlPart = path.substring(0, path.lastIndexOf('/'));
-          var d = require('./Device');
-          new d.Device(devInfo, callback);
+          new Device(devInfo, callback);
         } else {
           console.log(err);
           console.log(result);

@@ -7,7 +7,7 @@ var request = require('request');
 var crypto = require('crypto');
 var s = require('./Service');
 
-function Device(deviceInfo, callback) {
+export default function Device(deviceInfo, callback) {
   this.meta = deviceInfo;
   this.meta.servicesInfo = [];
   this.readyCallback = callback;
@@ -204,4 +204,3 @@ function bind(scope, fn) {
   };
 }
 
-exports.Device = Device;
