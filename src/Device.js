@@ -203,4 +203,3 @@ function bind(scope, fn) {
     return fn.apply(scope, arguments);
   };
 }
-

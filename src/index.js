@@ -5,7 +5,7 @@ var request = require('request');
 var http = require('http');
 var inspect = require('eyes').inspector({
   maxLength: false,
-  hideFunctions: false
+  hideFunctions: false,
 });
 var URL = require('url');
 

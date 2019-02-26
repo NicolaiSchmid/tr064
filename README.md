@@ -29,11 +29,11 @@ More info about TR-064: https://avm.de/fileadmin/user_upload/Global/Service/Schn
 Connect to the device and read a Service.
 
 ```javascript
-var tr = require("tr-064");
+var tr = require('tr-064');
 var tr064 = new tr.TR064();
-tr064.initTR064Device("fritz.box", 49000, function(err, device) {
+tr064.initTR064Device('fritz.box', 49000, function(err, device) {
   if (!err) {
-    var wanip = device.services["urn:dslforum-org:service:WANIPConnection:1"];
+    var wanip = device.services['urn:dslforum-org:service:WANIPConnection:1'];
     wanip.actions.GetInfo(function(err, result) {
       console.log(result);
     });
@@ -44,15 +44,14 @@ tr064.initTR064Device("fritz.box", 49000, function(err, device) {
 ## Save communication (SSL Encryption, Authentication)
 
 ```javascript
-var tr = require("tr-064");
+var tr = require('tr-064');
 var tr064 = new tr.TR064();
-tr064.initTR064Device("fritz.box", 49000, function(err, device) {
+tr064.initTR064Device('fritz.box', 49000, function(err, device) {
   if (!err) {
     device.startEncryptedCommunication(function(err, sslDev) {
       if (!err) {
         sslDev.login([USER], [PASSWORD]);
-        var wanip =
-          sslDev.services["urn:dslforum-org:service:WANIPConnection:1"];
+        var wanip = sslDev.services['urn:dslforum-org:service:WANIPConnection:1'];
         wanip.actions.GetInfo(function(err, result) {
           console.log(result);
         });
@@ -67,34 +66,34 @@ tr064.initTR064Device("fritz.box", 49000, function(err, device) {
 Get the info from both protocols.
 
 ```javascript
-var tr = require("tr-064");
+var tr = require('tr-064');
 var tr064 = new tr.TR064();
-tr064.initTR064Device("fritz.box", 49000, function(err, device) {
+tr064.initTR064Device('fritz.box', 49000, function(err, device) {
   if (!err) {
-    console.log("Found device! - TR-064");
+    console.log('Found device! - TR-064');
     showDevice(device);
   }
 });
 
-tr064.initIGDDevice("fritz.box", 49000, function(err, device) {
+tr064.initIGDDevice('fritz.box', 49000, function(err, device) {
   if (!err) {
-    console.log("Found device! - IGD");
+    console.log('Found device! - IGD');
     showDevice(device);
   }
 });
 
 var showDevice = function(device) {
-  console.log("=== " + device.meta.friendlyName + " ===");
+  console.log('=== ' + device.meta.friendlyName + ' ===');
   device.meta.servicesInfo.forEach(function(serviceType) {
     var service = device.services[serviceType];
-    console.log("  ---> " + service.meta.serviceType + " <---");
+    console.log('  ---> ' + service.meta.serviceType + ' <---');
     service.meta.actionsInfo.forEach(function(action) {
-      console.log("   # " + action.name + "()");
+      console.log('   # ' + action.name + '()');
       action.inArgs.forEach(function(arg) {
-        console.log("     IN : " + arg);
+        console.log('     IN : ' + arg);
       });
       action.outArgs.forEach(function(arg) {
-        console.log("     OUT: " + arg);
+        console.log('     OUT: ' + arg);
       });
     });
   });
@@ -168,10 +167,7 @@ Gets the specified service form the device
 - `callback` - (err, result)
 
 ```javascript
-service.actions.SetEnable([{ name: "NewEnable", value: "1" }], function(
-  err,
-  result
-) {
+service.actions.SetEnable([{ name: 'NewEnable', value: '1' }], function(err, result) {
   console.log(result);
 });
 ```
