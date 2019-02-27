@@ -198,11 +198,11 @@ Service.prototype._sendSOAPActionRequest = function(
     serviceType +
     '">';
 
-  for (var i in vars) {
+  Object.keys(vars).forEach(key => {
     body += '<' + vars[i].name + '>';
     body += vars[i].value;
     body += '</' + vars[i].name + '>';
-  }
+  });
 
   body = body + '</u:' + action + '>' + '</s:Body>' + '</s:Envelope>';
 
