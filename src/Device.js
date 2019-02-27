@@ -1,11 +1,11 @@
-var inspect = require('eyes').inspector({
+const inspect = require('eyes').inspector({
   maxLength: false,
   hideFunctions: false,
 });
-var async = require('async');
-var request = require('request');
-var crypto = require('crypto');
-var s = require('./Service');
+const async = require('async');
+const request = require('request');
+const crypto = require('crypto');
+const s = require('./Service');
 
 export default function Device(deviceInfo, callback) {
   this.meta = deviceInfo;
@@ -38,9 +38,9 @@ Device.prototype.logout = function() {
   this._auth.chCount = 0;
 };
 Device.prototype.startTransaction = function(cb) {
-  var that = this;
-  var sessionID = uuid();
-  this._startTransaction(sessionID, function(err) {
+  const that = this;
+  const sessionID = uuid();
+  this._startTransaction(sessionID, (err) => {
     if (!err) {
       that._isTransaction = true;
       cb(null, that);
@@ -50,8 +50,8 @@ Device.prototype.startTransaction = function(cb) {
   });
 };
 Device.prototype.stopTransaction = function(cb) {
-  var that = this;
-  this._stopTransaction(function(err) {
+  const that = this;
+  this._stopTransaction((err) => {
     if (!err) {
       that._isTransaction = false;
       cb(null, that);
@@ -67,8 +67,8 @@ Device.prototype.startEncryptedCommunication = function(caFile, cb) {
   } else {
     this._ca = fs.readFileSync(caFile); // .pem File
   }
-  var that = this;
-  this._getSSLPort(function(err, port) {
+  const that = this;
+  this._getSSLPort((err, port) => {
     if (!err) {
       that._sslPort = port;
       cb(null, that);
@@ -83,9 +83,9 @@ Device.prototype.stopEncryptedCommunication = function() {
 
 var getServicesFromDevice = function(serviceArray, device) {
   serviceArray = serviceArray.concat(device.serviceList.service);
-  //console.log(serviceArray);
+  // console.log(serviceArray);
   if (device.deviceList && Array.isArray(device.deviceList.device)) {
-    device.deviceList.device.forEach(function(dev) {
+    device.deviceList.device.forEach((dev) => {
       serviceArray = getServicesFromDevice(serviceArray, dev);
     });
   } else if (device.deviceList && device.deviceList.device) {
@@ -95,9 +95,9 @@ var getServicesFromDevice = function(serviceArray, device) {
 };
 
 Device.prototype._parseServices = function() {
-  var serviceArray = getServicesFromDevice([], this.meta);
-  var asyncAddService = bind(this, this._addService);
-  var asyncAddResultToServiceList = bind(this, this._addResultToServiceList);
+  const serviceArray = getServicesFromDevice([], this.meta);
+  const asyncAddService = bind(this, this._addService);
+  const asyncAddResultToServiceList = bind(this, this._addResultToServiceList);
   async.concat(serviceArray, asyncAddService, asyncAddResultToServiceList);
 };
 
@@ -107,8 +107,8 @@ Device.prototype._addService = function(serviceData, callback) {
 
 Device.prototype._addResultToServiceList = function(err, services) {
   if (!err) {
-    for (var i in services) {
-      var service = services[i];
+    for (const i in services) {
+      const service = services[i];
       this.services[service.meta.serviceType] = service;
       this.meta.servicesInfo.push(service.meta.serviceType);
     }
@@ -123,14 +123,14 @@ Device.prototype._addResultToServiceList = function(err, services) {
 
 // SSL Encription
 Device.prototype._getSSLPort = function(cb) {
-  var devInfo = this.services['urn:dslforum-org:service:DeviceInfo:1'];
-  devInfo.actions.GetSecurityPort(function(err, result) {
+  const devInfo = this.services['urn:dslforum-org:service:DeviceInfo:1'];
+  devInfo.actions.GetSecurityPort((err, result) => {
     if (!err) {
-      var sslPort = parseInt(result.NewSecurityPort);
+      const sslPort = parseInt(result.NewSecurityPort);
       if (typeof sslPort === 'number' && isFinite(sslPort)) {
         cb(null, sslPort);
       } else {
-        cb(new Error('Got bad port from Device. Port:' + result.NewSecurityPort));
+        cb(new Error(`Got bad port from Device. Port:${  result.NewSecurityPort}`));
       }
     } else {
       console.log(err);
@@ -141,18 +141,18 @@ Device.prototype._getSSLPort = function(cb) {
 
 // Login
 Device.prototype._calcAuthDigest = function(uid, pwd, realm, sn) {
-  var MD5 = crypto.createHash('md5');
-  MD5.update(uid + ':' + realm + ':' + pwd);
-  var secret = MD5.digest('hex');
+  let MD5 = crypto.createHash('md5');
+  MD5.update(`${uid  }:${  realm  }:${  pwd}`);
+  const secret = MD5.digest('hex');
   MD5 = crypto.createHash('md5');
-  MD5.update(secret + ':' + sn);
+  MD5.update(`${secret  }:${  sn}`);
   return MD5.digest('hex');
 };
 
 // Transaction
 Device.prototype._startTransaction = function(sessionID, cb) {
-  var devConfig = this.services['urn:dslforum-org:service:DeviceConfig:1'];
-  devConfig.actions.ConfigurationStarted({ NewSessionID: sessionID }, function(err) {
+  const devConfig = this.services['urn:dslforum-org:service:DeviceConfig:1'];
+  devConfig.actions.ConfigurationStarted({ NewSessionID: sessionID }, (err) => {
     if (!err) {
       cb(null);
     } else {
@@ -161,8 +161,8 @@ Device.prototype._startTransaction = function(sessionID, cb) {
   });
 };
 Device.prototype._stopTransaction = function(cb) {
-  var devConfig = this.services['urn:dslforum-org:service:DeviceConfig:1'];
-  devConfig.actions.ConfigurationFinished(function(err) {
+  const devConfig = this.services['urn:dslforum-org:service:DeviceConfig:1'];
+  devConfig.actions.ConfigurationFinished((err) => {
     if (!err) {
       cb(null);
     } else {
