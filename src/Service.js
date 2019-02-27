@@ -1,4 +1,4 @@
-const parseString = require('xml2js').parseString;
+const { parseString } = require('xml2js');
 const inspect = require('eyes').inspector({
   maxLength: false,
   hideFunctions: false,
@@ -18,13 +18,14 @@ function Service(device, serviceInfo, callback) {
   // console.log("Service: "+this.host);
   _parseSCPD(this);
 }
+
 Service.prototype.listActions = function() {};
 Service.prototype.listStateVariables = function() {};
 
 const _pushArg = function(argument, inArgs, outArgs) {
-  if (argument.direction == 'in') {
+  if (argument.direction === 'in') {
     inArgs.push(argument.name);
-  } else if (argument.direction == 'out') {
+  } else if (argument.direction === 'out') {
     outArgs.push(argument.name);
   }
 };
@@ -39,14 +40,14 @@ const _parseActions = function(actionData) {
   //
 };
 
-var _parseSCPD = function(obj) {
+const _parseSCPD = function(obj) {
   if (obj.device.meta.urlPart && obj.device.meta.urlPart.length > 0) {
-    obj.meta.SCPDURL = `${obj.device.meta.urlPart  }/${  obj.meta.SCPDURL}`;
+    obj.meta.SCPDURL = `${obj.device.meta.urlPart}/${obj.meta.SCPDURL}`;
   }
-  const url = `http://${  obj.host  }:${  obj.port  }${obj.meta.SCPDURL}`;
+  const url = `http://${obj.host}:${obj.port}${obj.meta.SCPDURL}`;
   // console.log(url);
   request(url, (error, response, body) => {
-    if (!error && response.statusCode == 200) {
+    if (!error && response.statusCode === 200) {
       // console.log(body);
       parseString(
         body,
@@ -72,7 +73,7 @@ var _insertAction = function(el) {
   const outArgs = [];
   const inArgs = [];
   if (el.argumentList && Array.isArray(el.argumentList.argument)) {
-    el.argumentList.argument.forEach((argument) => {
+    el.argumentList.argument.forEach(argument => {
       _pushArg(argument, inArgs, outArgs);
     });
   } else if (el.argumentList) {
@@ -121,14 +122,14 @@ function bind(scope, fn) {
 }
 
 const _insertStateVariables = function(sv) {
-  if (sv.$.sendEvents == 'yes') {
+  if (sv.$.sendEvents === 'yes') {
     this.stateVariables[sv.name] = bind(this, function(callback) {
       this._subscribeStateVariableChangeEvent(sv, callback);
     });
   }
 };
 
-var _parseStateVariables = function(stateVariableData) {
+const _parseStateVariables = function(stateVariableData) {
   const insSV = bind(this, _insertStateVariables);
   if (Array.isArray(stateVariableData)) {
     stateVariableData.forEach(insSV);
@@ -154,34 +155,22 @@ Service.prototype._sendSOAPActionRequest = function(
     if (device._auth.auth) {
       head =
         `${'<s:Header>' +
-        '<h:ClientAuth xmlns:h="http://soap-authentication.org/digest/2001/10/"' +
-        's:mustUnderstand="1">' +
-        '<Nonce>'}${ 
-        device._auth.sn 
-        }</Nonce>` +
-        `<Auth>${ 
-        device._auth.auth 
-        }</Auth>` +
-        `<UserID>${ 
-        device._auth.uid 
-        }</UserID>` +
-        `<Realm>${ 
-        device._auth.realm 
-        }</Realm>` +
+          '<h:ClientAuth xmlns:h="http://soap-authentication.org/digest/2001/10/"' +
+          's:mustUnderstand="1">' +
+          '<Nonce>'}${device._auth.sn}</Nonce>` +
+        `<Auth>${device._auth.auth}</Auth>` +
+        `<UserID>${device._auth.uid}</UserID>` +
+        `<Realm>${device._auth.realm}</Realm>` +
         `</h:ClientAuth>` +
         `</s:Header>`;
     } else {
       // First Auth
       head =
         `${' <s:Header>' +
-        '<h:InitChallenge xmlns:h="http://soap-authentication.org/digest/2001/10/"' +
-        's:mustUnderstand="1">' +
-        '<UserID>'}${ 
-        device._auth.uid 
-        }</UserID>` +
-        `<Realm>${ 
-        device._auth.realm 
-        }</Realm>` +
+          '<h:InitChallenge xmlns:h="http://soap-authentication.org/digest/2001/10/"' +
+          's:mustUnderstand="1">' +
+          '<UserID>'}${device._auth.uid}</UserID>` +
+        `<Realm>${device._auth.realm}</Realm>` +
         `</h:InitChallenge>` +
         `</s:Header>`;
     }
@@ -189,26 +178,21 @@ Service.prototype._sendSOAPActionRequest = function(
 
   let body =
     `${'<?xml version="1.0" encoding="utf-8"?>' +
-    '<s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:s=" http://schemas.xmlsoap.org/soap/envelope/">'}${ 
-    head 
-    }<s:Body>` +
-    `<u:${ 
-    action 
-    } xmlns:u="${ 
-    serviceType 
-    }">`;
+      '<s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:s=" http://schemas.xmlsoap.org/soap/envelope/">'}${head}<s:Body>` +
+    `<u:${action} xmlns:u="${serviceType}">`;
 
   Object.keys(vars).forEach(key => {
-    body += `<${  vars[i].name  }>`;
-    body += vars[i].value;
-    body += `</${  vars[i].name  }>`;
+    body += `<${vars[key].name}>`;
+    body += vars[key].value;
+    body += `</${vars[key].name}>`;
   });
 
-  body = `${body  }</u:${  action  }>` + `</s:Body>` + `</s:Envelope>`;
+  body = `${body}</u:${action}>` + `</s:Body>` + `</s:Envelope>`;
 
-  let port = 0,
-    proto = '',
-    agentOptions = null;
+  let port = 0;
+  let proto = '';
+  let agentOptions = null;
+
   if (device._sslPort) {
     port = device._sslPort;
     proto = 'https://';
@@ -225,7 +209,7 @@ Service.prototype._sendSOAPActionRequest = function(
     proto = 'http://';
     port = device.meta.port;
   }
-  const uri = `${proto + device.meta.host  }:${  port  }${url}`;
+  const uri = `${proto + device.meta.host}:${port}${url}`;
   const that = this;
   request(
     {
@@ -233,14 +217,14 @@ Service.prototype._sendSOAPActionRequest = function(
       uri,
       agentOptions,
       headers: {
-        SoapAction: `${serviceType  }#${  action}`,
+        SoapAction: `${serviceType}#${action}`,
         'Content-Type': 'text/xml; charset="utf-8"',
       },
       body,
       timeout: 5000,
     },
     (error, response, body) => {
-      if (!error && response.statusCode == 200) {
+      if (!error && response.statusCode === 200) {
         parseString(
           body,
           {
@@ -257,7 +241,7 @@ Service.prototype._sendSOAPActionRequest = function(
                 challange = true;
                 if (self.logAttempts.length) {
                   for (const i in self.logAttempts) {
-                    if (self.logAttempts[i].service == serviceType) {
+                    if (self.logAttempts[i].service === serviceType) {
                       if (self.logAttempts[i].attempts >= 1) {
                         error = new Error('Credentials incorrect');
                       } else {
@@ -271,7 +255,7 @@ Service.prototype._sendSOAPActionRequest = function(
                           device._auth.realm,
                           device._auth.sn,
                         );
-                        device._auth.chCount++;
+                        device._auth.chCount += 1;
                         that._sendSOAPActionRequest(
                           device,
                           url,
@@ -296,7 +280,7 @@ Service.prototype._sendSOAPActionRequest = function(
                     device._auth.realm,
                     device._auth.sn,
                   );
-                  device._auth.chCount++;
+                  device._auth.chCount += 1;
                   // Repeat request.
                   that._sendSOAPActionRequest(
                     device,
@@ -313,7 +297,7 @@ Service.prototype._sendSOAPActionRequest = function(
               } else if (header['h:NextChallenge']) {
                 const nx = header['h:NextChallenge'];
                 for (const i in self.logAttempts) {
-                  if (self.logAttempts[i].service == serviceType) {
+                  if (self.logAttempts[i].service === serviceType) {
                     self.logAttempts[i].attempts = 0;
                   }
                 }
@@ -332,16 +316,16 @@ Service.prototype._sendSOAPActionRequest = function(
 
             if (env['s:Body']) {
               const body = env['s:Body'];
-              if (body[`u:${  action  }Response`]) {
-                const responseVars = body[`u:${  action  }Response`];
+              if (body[`u:${action}Response`]) {
+                const responseVars = body[`u:${action}Response`];
                 if (outArguments) {
-                  outArguments.forEach((arg) => {
+                  outArguments.forEach(arg => {
                     res[arg] = responseVars[arg];
                   });
                 }
               } else if (body['s:Fault']) {
                 const fault = body['s:Fault'];
-                error = new Error(`Device responded with fault ${  error}`);
+                error = new Error(`Device responded with fault ${error}`);
                 res = fault;
               }
             }
@@ -350,13 +334,9 @@ Service.prototype._sendSOAPActionRequest = function(
         );
       } else {
         const newError = new Error(
-          `sendSOAPActionRequest Error! [${ 
-            action 
-            }] [${ 
-            serviceType 
-            }]${ 
-            response ? ` [${  response.statusCode  }]` : '' 
-            }${error ? ` [${  error.code  }]` : ''}`,
+          `sendSOAPActionRequest Error! [${action}] [${serviceType}]${
+            response ? ` [${response.statusCode}]` : ''
+          }${error ? ` [${error.code}]` : ''}`,
         );
         callback(newError, null);
       }
@@ -369,7 +349,7 @@ Service.prototype.sendSOAPEventSubscribeRequest = function(callback) {
   request(
     {
       method: 'SUBSCRIBE',
-      uri: `http://${  this.host  }:${  this.port  }${this.meta.eventSubURL}`,
+      uri: `http://${this.host}:${this.port}${this.meta.eventSubURL}`,
       headers: {
         CALLBACK: '<http://192.168.178.28:44880/>',
         NT: 'upnp:event',
@@ -378,11 +358,11 @@ Service.prototype.sendSOAPEventSubscribeRequest = function(callback) {
     },
     (error, response, body) => {
       console.log('END');
-      if (response.statusCode == 200) {
+      if (response.statusCode === 200) {
         console.log('EventSubscribeRequest OK');
       } else {
-        error = new Error(`EventSubscribeRequest Error: ${  response.statusCode}`);
-        console.log(`error: ${  response.statusCode}`);
+        error = new Error(`EventSubscribeRequest Error: ${response.statusCode}`);
+        console.log(`error: ${response.statusCode}`);
         console.log(body);
       }
     },
