@@ -1,3 +1,5 @@
+import Service from './Service';
+
 const inspect = require('eyes').inspector({
   maxLength: false,
   hideFunctions: false,
@@ -5,7 +7,6 @@ const inspect = require('eyes').inspector({
 const async = require('async');
 const request = require('request');
 const crypto = require('crypto');
-const s = require('./Service');
 
 export default function Device(deviceInfo, callback) {
   this.meta = deviceInfo;
@@ -40,7 +41,7 @@ Device.prototype.logout = function() {
 Device.prototype.startTransaction = function(cb) {
   const that = this;
   const sessionID = uuid();
-  this._startTransaction(sessionID, (err) => {
+  this._startTransaction(sessionID, err => {
     if (!err) {
       that._isTransaction = true;
       cb(null, that);
@@ -51,7 +52,7 @@ Device.prototype.startTransaction = function(cb) {
 };
 Device.prototype.stopTransaction = function(cb) {
   const that = this;
-  this._stopTransaction((err) => {
+  this._stopTransaction(err => {
     if (!err) {
       that._isTransaction = false;
       cb(null, that);
@@ -85,7 +86,7 @@ var getServicesFromDevice = function(serviceArray, device) {
   serviceArray = serviceArray.concat(device.serviceList.service);
   // console.log(serviceArray);
   if (device.deviceList && Array.isArray(device.deviceList.device)) {
-    device.deviceList.device.forEach((dev) => {
+    device.deviceList.device.forEach(dev => {
       serviceArray = getServicesFromDevice(serviceArray, dev);
     });
   } else if (device.deviceList && device.deviceList.device) {
@@ -102,7 +103,7 @@ Device.prototype._parseServices = function() {
 };
 
 Device.prototype._addService = function(serviceData, callback) {
-  new s.Service(this, serviceData, callback);
+  new Service(this, serviceData, callback);
 };
 
 Device.prototype._addResultToServiceList = function(err, services) {
@@ -130,7 +131,7 @@ Device.prototype._getSSLPort = function(cb) {
       if (typeof sslPort === 'number' && isFinite(sslPort)) {
         cb(null, sslPort);
       } else {
-        cb(new Error(`Got bad port from Device. Port:${  result.NewSecurityPort}`));
+        cb(new Error(`Got bad port from Device. Port:${result.NewSecurityPort}`));
       }
     } else {
       console.log(err);
@@ -142,17 +143,17 @@ Device.prototype._getSSLPort = function(cb) {
 // Login
 Device.prototype._calcAuthDigest = function(uid, pwd, realm, sn) {
   let MD5 = crypto.createHash('md5');
-  MD5.update(`${uid  }:${  realm  }:${  pwd}`);
+  MD5.update(`${uid}:${realm}:${pwd}`);
   const secret = MD5.digest('hex');
   MD5 = crypto.createHash('md5');
-  MD5.update(`${secret  }:${  sn}`);
+  MD5.update(`${secret}:${sn}`);
   return MD5.digest('hex');
 };
 
 // Transaction
 Device.prototype._startTransaction = function(sessionID, cb) {
   const devConfig = this.services['urn:dslforum-org:service:DeviceConfig:1'];
-  devConfig.actions.ConfigurationStarted({ NewSessionID: sessionID }, (err) => {
+  devConfig.actions.ConfigurationStarted({ NewSessionID: sessionID }, err => {
     if (!err) {
       cb(null);
     } else {
@@ -162,7 +163,7 @@ Device.prototype._startTransaction = function(sessionID, cb) {
 };
 Device.prototype._stopTransaction = function(cb) {
   const devConfig = this.services['urn:dslforum-org:service:DeviceConfig:1'];
-  devConfig.actions.ConfigurationFinished((err) => {
+  devConfig.actions.ConfigurationFinished(err => {
     if (!err) {
       cb(null);
     } else {

@@ -5,7 +5,7 @@ const inspect = require('eyes').inspector({
 });
 const request = require('request');
 
-function Service(device, serviceInfo, callback) {
+export default function Service(device, serviceInfo, callback) {
   this.host = device.meta.host;
   this.port = device.meta.port;
   this.device = device;
@@ -368,5 +368,3 @@ Service.prototype.sendSOAPEventSubscribeRequest = function(callback) {
     },
   );
 };
-
-exports.Service = Service;
